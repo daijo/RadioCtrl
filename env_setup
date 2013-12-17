@@ -1,0 +1,5 @@
+#
+# Run: source env_setup
+#
+export BOARD=atmega328
+export SERIALDEV=/dev/tty.usbserial-A400fXmd
