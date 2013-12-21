@@ -37,7 +37,7 @@ Pin assignment
 
     D0 - Serial RX (unused)
     D1 - Serial TX (unused)
-    D2 - Mute in (RX)/paddle detect(TX) (interrupt)
+    D2 - Mute in (RX) (interrupt)
     D3 - Encoder (interupt)
     D4 - Encoder
     D5 - Encoder push
@@ -47,13 +47,13 @@ Pin assignment
     D9 - DDS VFO Clock
     D10 - DDS VFO Data
     D11 - Sidetone (PWM)
-    D12 - Serial LCD TX
-    D13 - Serial LCD RX
+    D12 - Unused
+    D13 - Unused
     
     A0 - Voltage sense
     A1 - Audio detect (CW decode)
-    A2/D16 - I2C
-    A3/D17 - I2C
+    A2/D16 - I2C (LCD etc.)
+    A3/D17 - I2C (LCD etc.)
     A4/D18 - Mute/T/R out (TX)
     A5/D19 - Key out (TX)
 

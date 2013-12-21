@@ -3,3 +3,4 @@
 #
 export BOARD=atmega328
 export SERIALDEV=/dev/tty.usbserial-A400fXmd
+mkdir .dep

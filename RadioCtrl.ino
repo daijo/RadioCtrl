@@ -15,6 +15,7 @@ bool mInTx = false;
 
 struct vfo_t
 {
+  int first;
   long freq;
   int rit;
   int step;
@@ -47,9 +48,13 @@ struct keyer_t
   int speed;
 } keyer;
 
+long position;
+
 bool ditDown();
 bool dahDown();
 bool keyDown();
+
+void printFreq(long freq);
 
 void setup() {
 
@@ -74,34 +79,28 @@ void setup() {
   lcd.print("by Daniel Hjort");
 
   Serial.begin(9600);
-  Serial.println("Radio Control v1.0");
+  Serial.println("RadioCtrl v1.0");
+  Serial.println("by Daniel Hjort");
 
   // Read presisted values
   EEPROM_readAnything(0, vfo);
 
   // Set defaults
-  if (vfo.freq == 0) {
+  if (vfo.first != 666) {
+    vfo.first = 666;
     vfo.freq = 7000000;
-  }
-
-  if (vfo.step == 0) {
     vfo.step = 100;
   }
-}
 
-long position  = -999;
+  position = knob.read();
+}
 
 void loop() {
 
   long newPos;
   newPos = knob.read();
   if (newPos != position) {
-
-Serial.print("new pos ");
-Serial.println(newPos);
-
     if (0 == newPos % 4) {
-
       if (newPos > position) {
         vfo.freq += vfo.step;
         position = newPos;
@@ -129,19 +128,36 @@ Serial.println(newPos);
       lcd.print("RX");
     }
 
-    lcd.setCursor(3, 0);
-    lcd.print("7,020.225 kHz");
+    printFreq(vfo.freq);
     lcd.setCursor(0, 1);
     lcd.print("RIT +0.625 kHz");
 
     EEPROM_writeAnything(0, vfo);
     mUpdate = false;
+
+    Serial.print("freq: ");
+    Serial.print(vfo.freq);
+    Serial.println(" Hz");
   }
 
   // Test paddle
-  Serial.print(" ");
-  Serial.print(ditDown());
-  Serial.print(dahDown());
+  //Serial.print(" ");
+  //Serial.print(ditDown());
+  //Serial.print(dahDown());
+
+  if (keyer.isPaddle) {
+    // Update keyer state
+  } else {
+    if (ditDown()) {
+      // key down
+      mInTx = true;
+      mUpdate = true;
+    } else {
+      // key up
+      mInTx = false;
+      mUpdate = true;
+    }
+  }
 }
 
 /* Keyer */
@@ -159,5 +175,30 @@ bool dahDown()
 /* Sidetone */
 
 /* UI */
+
+void printFreq(long freq)
+{
+    int MHz = vfo.freq / 1000000;
+    int kHz = vfo.freq / 1000 - MHz * 1000;
+    int Hz = vfo.freq % 1000;
+
+    lcd.setCursor(3, 0);
+    lcd.print(MHz);
+    lcd.print(",");
+    if (kHz <= 9) {
+      lcd.print("00");
+    } else if (kHz <= 99) {
+      lcd.print("0");
+    }
+    lcd.print(kHz);
+    lcd.print(".");
+    if (Hz <= 9) {
+      lcd.print("00");
+    } else if (Hz <= 99) {
+      lcd.print("0");
+    }
+    lcd.print(Hz);
+    lcd.print(" kHz");
+}
 
 /* VFO */
