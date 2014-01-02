@@ -12,7 +12,7 @@ Menu
 - Short press to select.
 - Short press when not in menu switches between frequency and RIT selection on rotary encoder.
 
-    Step <-> Save <-> Recall <-> Sidetone <-> ( Band ) <-> Keyer <-> ( CW Decode )
+    Step <-> Sidetone <-> ( Band ) <-> Keyer <-> ( CW Decode )
     
     Step: 1MHz <-> 1kHz <-> 100Hz <-> 10Hz
     
@@ -20,15 +20,9 @@ Menu
     
     ( Band: 160m <-> 80m <-> 40m <-> 30m <-> 20m <-> 15m <-> 10m <-> 6m )
     
-    Keyer*: Mode A <-> Mode B
+    Keyer: Mode A <-> Mode B
     
     ( CW Decode: On <-> Off )
-    
-    Save: M1 <-> M2 <-> M3 <-> M4 <-> M5
-    
-    Recall: M1 <-> M2 <-> M3 <-> M4 <-> M5
-    
-    Marked * if RADIO_TYPE_TXR
 
 Pin assignment
 --------------
