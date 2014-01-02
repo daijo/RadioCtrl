@@ -1,30 +1,28 @@
 Radio Controller
 ================
 
-Code for having an Arduino control a homebrew CW radio.
+Code for having an Arduino control a homebrew CW tranceiver.
 
-Can be configured as receiver or transceiver.
+![FrontPanel](https://github.com/daijo/RadioCtrl/raw/master/images/front.jpg)
 
 Menu
 ----
 
 - Menu mode is toggled by a long press (2 s) on the rotary knob. Times out in 5 s. 
 - Short press to select.
-- Press and turn for RIT.
+- Short press when not in menu switches between frequency and RIT selection on rotary encoder.
 
-    Step <-> Save <-> Recall <-> Sidetone <-> Band <-> Keyer <-> CW Decode <-> Shortcut
+    Step <-> Save <-> Recall <-> Sidetone <-> ( Band ) <-> Keyer <-> ( CW Decode )
     
     Step: 1MHz <-> 1kHz <-> 100Hz <-> 10Hz
     
     Sidetone: On <-> Off
     
-    Band: 160m <-> 80m <-> 40m <-> 30m <-> 20m <-> 15m <-> 10m <-> 6m
-        
+    ( Band: 160m <-> 80m <-> 40m <-> 30m <-> 20m <-> 15m <-> 10m <-> 6m )
+    
     Keyer*: Mode A <-> Mode B
     
-    CW Decode: On <-> Off
-    
-    Shortcut: Step <-> Save <-> Recall <-> Sidetone <-> Band <-> Keyer <-> CW Decode
+    ( CW Decode: On <-> Off )
     
     Save: M1 <-> M2 <-> M3 <-> M4 <-> M5
     
@@ -64,14 +62,15 @@ The controller read commands and writes status over the hardware UART.
 
 TBD define protocol.
 
+DDS VFO Control
+---------------
+
 I2C devices
 -----------
 
 The controller sends commands to I2C slave controllers for additional functionallity.
 
 ### 16x2 Display
-
-Adafruit I2C displayes.
 
 ### Bandpass Board
 
@@ -80,11 +79,7 @@ TBD define protocol.
 Build
 -----
 
-    export RADIO_TYPE=RADIO_TYPE_RX|RADIO_TYPE_TXR
-    export VFO_MIN_HZ=1800000
-    export VFO_MAX_HZ=30000000
     export VFO_IF_OFFSET=0
-    export DISPLAY_TYPE=DISPLAY_TYPE_SERIAL|DISPLAY_TYPE_I2C
     export ARDUINODIR=/Users/daijo/Code/Arduino
     export SERIALDEV=/dev/tty.usbserial-A400fXmd
     export BOARD=atmega328
