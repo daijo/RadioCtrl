@@ -10,16 +10,7 @@
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 
-bool mUpdate = false;
-bool mInTx = false;
-
-struct vfo_t
-{
-  int first;
-  long freq;
-  int rit;
-  int step;
-} vfo;
+#include "RadioMMI.h"
 
 // Change these pin numbers to the pins connected to your encoder.
 //   Best Performance: both pins have interrupt capability
@@ -42,29 +33,9 @@ Encoder knob(3, 4);
 
 LiquidCrystal_I2C lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 
-struct keyer_t
-{
-  bool isPaddle;
-  int speed;
-} keyer;
-
-long position;
-
-bool ditDown();
-bool dahDown();
-bool keyDown();
-
-void printFreq(long freq);
+RadioMMI mmi;
 
 void setup() {
-
-  // Setup keyer
-  pinMode(DIT_PIN, INPUT);      // set pin to input
-  digitalWrite(DIT_PIN, HIGH);  // turn on pullup resistors
-  pinMode(DAH_PIN, INPUT);      // set pin to input
-  digitalWrite(DAH_PIN, HIGH);  // turn on pullup resistors
-
-  keyer.isPaddle = digitalRead(DIT_PIN);
 
   // Setup LCD
   lcd.begin (16,2);
@@ -82,36 +53,12 @@ void setup() {
   Serial.println("RadioCtrl v1.0");
   Serial.println("by Daniel Hjort");
 
-  // Read presisted values
-  EEPROM_readAnything(0, vfo);
-
-  // Set defaults
-  if (vfo.first != 666) {
-    vfo.first = 666;
-    vfo.freq = 7000000;
-    vfo.step = 100;
-  }
-
-  position = knob.read();
+  mmi.begin(&lcd, &knob, DIT_PIN, DAH_PIN);
 }
 
 void loop() {
 
-  long newPos;
-  newPos = knob.read();
-  if (newPos != position) {
-    if (0 == newPos % 4) {
-      if (newPos > position) {
-        vfo.freq += vfo.step;
-        position = newPos;
-        mUpdate = true;
-      } else if(newPos < position) {
-        vfo.freq -= vfo.step;
-        position = newPos;
-        mUpdate = true;
-      }
-    }
-  }
+  mmi.readInput();
 
   if (Serial.available()) {
 
@@ -119,86 +66,17 @@ void loop() {
     //Serial.read();
   }
 
-  if (mUpdate) {
-    lcd.clear();
-
-    if (mInTx) {
-      lcd.print("TX");
-    } else {
-      lcd.print("RX");
-    }
-
-    printFreq(vfo.freq);
-    lcd.setCursor(0, 1);
-    lcd.print("RIT +0.625 kHz");
-
-    EEPROM_writeAnything(0, vfo);
-    mUpdate = false;
-
-    Serial.print("freq: ");
-    Serial.print(vfo.freq);
-    Serial.println(" Hz");
-  }
-
-  // Test paddle
-  //Serial.print(" ");
-  //Serial.print(ditDown());
-  //Serial.print(dahDown());
-
-  if (keyer.isPaddle) {
+  if (mmi.isPaddleConnected()) {
     // Update keyer state
   } else {
-    if (ditDown()) {
+    if (mmi.ditDown()) {
       // key down
-      mInTx = true;
-      mUpdate = true;
+      mmi.setIsInTx(true);
     } else {
       // key up
-      mInTx = false;
-      mUpdate = true;
+      mmi.setIsInTx(false);
     }
   }
+
+  mmi.updateUi();
 }
-
-/* Keyer */
-
-bool ditDown()
-{
-  return !digitalRead(DIT_PIN);
-}
-
-bool dahDown()
-{
-  return !digitalRead(DAH_PIN);
-}
-
-/* Sidetone */
-
-/* UI */
-
-void printFreq(long freq)
-{
-    int MHz = vfo.freq / 1000000;
-    int kHz = vfo.freq / 1000 - MHz * 1000;
-    int Hz = vfo.freq % 1000;
-
-    lcd.setCursor(3, 0);
-    lcd.print(MHz);
-    lcd.print(",");
-    if (kHz <= 9) {
-      lcd.print("00");
-    } else if (kHz <= 99) {
-      lcd.print("0");
-    }
-    lcd.print(kHz);
-    lcd.print(".");
-    if (Hz <= 9) {
-      lcd.print("00");
-    } else if (Hz <= 99) {
-      lcd.print("0");
-    }
-    lcd.print(Hz);
-    lcd.print(" kHz");
-}
-
-/* VFO */
