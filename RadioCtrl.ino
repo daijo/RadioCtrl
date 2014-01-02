@@ -9,6 +9,7 @@
 #include <LiquidCrystal_I2C.h>
 
 #include "RadioMMI.h"
+#include "VFO.h"
 
 // Change these pin numbers to the pins connected to your encoder.
 //   Best Performance: both pins have interrupt capability
@@ -33,6 +34,8 @@ LiquidCrystal_I2C lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin)
 
 RadioMMI mmi;
 
+VFO vfo;
+
 void setup() {
 
   // Setup LCD
@@ -52,6 +55,8 @@ void setup() {
   Serial.println("by Daniel Hjort");
 
   mmi.begin(&lcd, &knob, DIT_PIN, DAH_PIN);
+
+  vfo.begin(mmi.getFreq());
 }
 
 void loop() {
@@ -63,6 +68,8 @@ void loop() {
     // Read command
     //Serial.read();
   }
+
+  vfo.setFrequency(mmi.getFreq());
 
   if (mmi.isPaddleConnected()) {
     // Update keyer state
