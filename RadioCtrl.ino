@@ -3,8 +3,6 @@
  * by Daniel Hjort, 2013.
  */
 
-#include <EEPROM.h>
-#include "EEPROMAnything.h"
 #include <Encoder.h>
 #include <Wire.h>
 #include <LCD.h>
