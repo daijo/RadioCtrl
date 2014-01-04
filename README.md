@@ -8,7 +8,7 @@ Code for having an Arduino control a homebrew CW tranceiver.
 Menu
 ----
 
-- Menu mode is toggled by a long press (2 s) on the rotary knob. Times out in 5 s. 
+- Menu mode is toggled by a long press (1 s) on the rotary knob. Times out in 5 s. 
 - Short press to select.
 - Short press when not in menu switches between frequency and RIT selection on rotary encoder.
 
