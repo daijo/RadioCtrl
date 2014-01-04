@@ -11,6 +11,18 @@
 #include <Encoder.h>
 #include <LCD.h>
 
+typedef enum {
+  NOT_PRESSED,
+  PRESSED,
+  LONG_PRESSED
+} button_state_t;
+
+typedef enum {
+  CHANGE_FREQ,
+  CHANGE_RIT,
+  MENU
+} mmi_state_t;
+
 class RadioMMI
 {
 public:
@@ -37,11 +49,23 @@ public:
 
   bool keyDown();
 
+  bool buttonPressed();
+
   void updateUi();
   
 private:
    
    void printFreq(long freq);
+
+   void printRit(int rit);
+
+   void onRotateLeft();
+
+   void onRotateRight();
+
+   void onPressed();
+
+   void onLongPressed();
 
    bool mUpdate;
 
@@ -64,6 +88,10 @@ private:
        int step;
    } mStore;
 
+   button_state_t mButtonState;
+   long mButtonDownSince;
+
+   mmi_state_t mMMIState;
 };
 
 #endif

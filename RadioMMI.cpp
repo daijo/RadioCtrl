@@ -13,6 +13,8 @@
 #include <EEPROM.h>
 #include "EEPROMAnything.h"
 
+#define BUTTON_PIN 5
+
 void RadioMMI::begin(LCD* lcd, Encoder* encoder, int ditPin, int dahPin)
 {
      mLcd = lcd;
@@ -25,10 +27,13 @@ void RadioMMI::begin(LCD* lcd, Encoder* encoder, int ditPin, int dahPin)
      digitalWrite(ditPin, HIGH);  // turn on pullup resistors
      pinMode(dahPin, INPUT);      // set pin to input
      digitalWrite(dahPin, HIGH);  // turn on pullup resistors
+     pinMode(BUTTON_PIN, INPUT);      // set pin to input
+     digitalWrite(BUTTON_PIN, HIGH);  // turn on pullup resistors
 
      mIsPaddleConnected = digitalRead(ditPin);
 
      mUpdate = true;
+     mMMIState = CHANGE_FREQ;
 
      mEncoderPosition = encoder->read();
 
@@ -50,15 +55,27 @@ void RadioMMI::readInput()
   if (newPos != mEncoderPosition) {
     if (0 == newPos % 4) {
       if (newPos > mEncoderPosition) {
-        mStore.freq += mStore.step;
         mEncoderPosition = newPos;
-        mUpdate = true;
+        onRotateRight();
       } else if(newPos < mEncoderPosition) {
-        mStore.freq -= mStore.step;
         mEncoderPosition = newPos;
-        mUpdate = true;
+        onRotateLeft();
       }
     }
+  }
+
+  if (!buttonPressed()) {
+    mButtonState = NOT_PRESSED;
+  } else if (buttonPressed()
+      && mButtonState == NOT_PRESSED) {
+    mButtonState = PRESSED;
+    mButtonDownSince = millis();
+    onPressed();
+  } else if (buttonPressed()
+      && mButtonState == PRESSED
+      && ((millis() - mButtonDownSince) > 1000)) {
+    mButtonState = LONG_PRESSED;
+    onLongPressed();
   }
 }
 
@@ -119,6 +136,12 @@ bool RadioMMI::keyDown()
     return ditDown();
 }
 
+bool RadioMMI::buttonPressed()
+{
+    return !digitalRead(BUTTON_PIN);
+}
+
+
 void RadioMMI::updateUi()
 {
   if (mUpdate) {
@@ -131,8 +154,7 @@ void RadioMMI::updateUi()
     }
 
     printFreq(mStore.freq);
-    mLcd->setCursor(0, 1);
-    mLcd->print("RIT +0.625 kHz"); //TODO: fix
+    printRit(mStore.rit);
 
     EEPROM_writeAnything(0, mStore);
 
@@ -141,7 +163,7 @@ void RadioMMI::updateUi()
 }
 
 /*
- * Private
+ * Private - UI
  */
 
 void RadioMMI::printFreq(long freq)
@@ -169,3 +191,70 @@ void RadioMMI::printFreq(long freq)
     mLcd->print(" kHz");
 }
 
+void RadioMMI::printRit(int rit)
+{
+    int kHz = rit / 1000;
+    int Hz = rit % 1000;
+
+    mLcd->setCursor(0, 1);
+    mLcd->print("RIT ");
+
+    if (rit >= 0) {
+      mLcd->print("+");
+    } else if (rit > -1000) {
+      mLcd->print("-");
+    }
+
+    mLcd->print(kHz);
+    mLcd->print(".");
+    if (Hz <= 9 && Hz >= -9) {
+      mLcd->print("00");
+    } else if (Hz <= 99 && Hz >= -99) {
+      mLcd->print("0");
+    }
+    
+    if (Hz >= 0) {
+      mLcd->print(Hz);
+    } else {
+      mLcd->print(-Hz);
+    }
+    mLcd->print(" kHz");
+}
+
+/*
+ *  Private - Events
+ */
+
+void RadioMMI::onRotateLeft()
+{
+    if (mMMIState == CHANGE_FREQ) {
+      mStore.freq -= mStore.step;
+    } else if (mMMIState == CHANGE_RIT) {
+      mStore.rit -= mStore.step;
+    }
+    mUpdate = true;
+}
+
+void RadioMMI::onRotateRight()
+{
+    if (mMMIState == CHANGE_FREQ) {
+      mStore.freq += mStore.step;
+    } else if (mMMIState == CHANGE_RIT) {
+      mStore.rit += mStore.step;
+    }
+    mUpdate = true;
+}
+
+void RadioMMI::onPressed()
+{
+    if (mMMIState == CHANGE_FREQ) {
+      mMMIState = CHANGE_RIT;
+    } else if (mMMIState == CHANGE_RIT) {
+      mMMIState = CHANGE_FREQ;
+    }
+}
+
+void RadioMMI::onLongPressed()
+{
+
+}
